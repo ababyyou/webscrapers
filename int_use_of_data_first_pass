@@ -1,0 +1,46 @@
+#!/usr/bin/env python
+#
+# Try and find all government domains of countries and optionally if they have a
+# have a data site.
+#
+
+from bs4 import BeautifulSoup
+import requests
+import socket
+import sys
+
+# First lets get a list of country domains from the source!
+page = requests.get("http://www.iana.org/domains/root/db")
+soup = BeautifulSoup(page.text, 'html.parser')
+table = soup.find('table', {'id': 'tld-table'})
+
+country_tlds = []
+
+for row in table.find_all('tr'):
+    cells = row.findChildren('td')
+    if len(cells) == 3:
+        if cells[1].string == u'country-code':
+            domain = cells[0].find('a').string
+            org = cells[2].string
+            print ("Country code %s from %s" % (domain, org))
+            country_tlds.append(domain)
+
+# timeout DNS queries quickly
+socket.setdefaulttimeout(1.0)
+
+for tld in country_tlds:
+    # Is there a gov.tld or a www.gov.tld?
+    try:
+        g = "gov%s" % (tld)
+        wg = "www.gov%s" % (tld)
+        gh = socket.gethostbyname(g)
+        wgh = socket.gethostbyname(wg)
+        if gh or wgh:
+            # lets try for a data.gov.tld
+            dg = "data.gov%s" % (tld)
+            dgh = socket.gethostbyname(dg)
+            if dgh:
+                print ("Found: %s @ %s" % (dg, dgh))
+
+    except:
+        pass
