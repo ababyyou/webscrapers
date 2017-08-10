@@ -3,6 +3,9 @@
 # Try and find all government domains of countries and optionally if they have a
 # have a data site.
 #
+# For use on mac OSX there is first a need to import python modules. I used
+# easy_install for BeautifulSoup4 and requests. Note that BeautifulSoup without
+#the number 4 yields a separate module and will result in an error.
 
 from bs4 import BeautifulSoup
 import requests
